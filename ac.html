@@ -23,7 +23,9 @@
             }
         );
         google.maps.event.addListener(autocomplete, 'place_changed', function(){
-          out.innerHTML = JSON.stringify(autocomplete.getPlace(), null, 4);
+          var place = autocomplete.getPlace();
+          console.log(place);
+          out.innerHTML = JSON.stringify(place, null, 4);
           hljs.highlightBlock(out);
         });
       })();
