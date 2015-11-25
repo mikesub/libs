@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/default.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/highlight.min.js"></script>
+  </head>
+  <body style="padding:10px">
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places&language=en"></script>
+    <input type="text" style="width:100%;display:block;font-size:24px" id="in" placeholder="enter location"/>
+    <div><pre id="out"></pre></div>
+    <script>
+      (function() {
+        var input = document.getElementById('in');
+        var output = document.getElementById('out');
+        var autocomplete = new google.maps.places.Autocomplete(
+            input,
+            {
+              types: ['geocode'],
+              componentRestrictions: {country: 'us'}
+            }
+        );
+        google.maps.event.addListener(autocomplete, 'place_changed', function(){
+          out.innerHTML = JSON.stringify(autocomplete.getPlace(), null, 4);
+          hljs.highlightBlock(out);
+        });
+      })();
+    </script>
+  </body>
+</html>
