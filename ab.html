@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+    <style>
+      body {
+        padding: 10px;
+      }
+
+      #out {
+        width: 940px;
+        margin: 50px auto;
+        text-align: center;
+      }
+
+      #out img {
+        box-shadow: 0px 0px 5px 0px black;
+        width: 940px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places&language=en"></script>
+    <form class="pure-form">
+      <fieldset>
+        <label for="from">Locations: Origin</label>
+        <input type="text" id="from"/>
+        <label for="to">Destination</label>
+        <input type="text" id="to"/>
+      </fieldset>
+      <fieldset>
+        <label for="lineWeight">Route line: Thickness</label>
+        <input type="number" value="5" min="1" max="10" id="lineWeight"/>
+        <label for="lineColor">Color</label>
+        <select id="lineColor">
+          <option value="black">black</option>
+          <option value="brown">brown</option>
+          <option value="green">green</option>
+          <option value="purple">purple</option>
+          <option value="yellow">yellow</option>
+          <option value="blue" selected>blue</option>
+          <option value="gray">gray</option>
+          <option value="orange">orange</option>
+          <option value="red">red</option>
+          <option value="white">white</option>
+        </select>
+      </fieldset>
+      <fieldset>
+        <label for="originSize">Origin marker: Size</label>
+        <select id="originSize">
+          <option value="default" selected>default</option>
+          <option value="tiny">tiny</option>
+          <option value="mid">mid</option>
+          <option value="small">small</option>
+        </select>
+        <label for="originLabel">Letter</label>
+        <input id="originLabel" type="text" value="O" maxlength="1"/>
+        <label for="originColor">Color</label>
+        <select id="originColor">
+          <option value="black">black</option>
+          <option value="brown">brown</option>
+          <option value="green" selected>green</option>
+          <option value="purple">purple</option>
+          <option value="yellow">yellow</option>
+          <option value="blue">blue</option>
+          <option value="gray">gray</option>
+          <option value="orange">orange</option>
+          <option value="red">red</option>
+          <option value="white">white</option>
+        </select>
+      </fieldset>
+        <label for="destSize">Destination marker: Size</label>
+        <select id="destSize">
+          <option value="default" selected>default</option>
+          <option value="tiny">tiny</option>
+          <option value="mid">mid</option>
+          <option value="small">small</option>
+        </select>
+        <label for="destLabel">Letter</label>
+        <input id="destLabel" type="text" value="D" maxlength="1"/>
+        <label for="destColor">Color</label>
+        <select id="destColor">
+          <option value="black">black</option>
+          <option value="brown">brown</option>
+          <option value="green">green</option>
+          <option value="purple">purple</option>
+          <option value="yellow">yellow</option>
+          <option value="blue">blue</option>
+          <option value="gray">gray</option>
+          <option value="orange">orange</option>
+          <option value="red" selected>red</option>
+          <option value="white">white</option>
+        </select>
+      </fieldset>
+    </form>
+    <div id="out"></div>
+    <script>
+
+      var autocompleteConfig = { types: ['geocode'], componentRestrictions: {country: 'us'} };
+      var from = new google.maps.places.Autocomplete(document.getElementById('from'), autocompleteConfig);
+      var to = new google.maps.places.Autocomplete(document.getElementById('to'), autocompleteConfig);
+      var directionsService = new google.maps.DirectionsService;
+
+      var latLng = function(place) {
+        return place.geometry.location.lat()+','+place.geometry.location.lng();
+      };
+
+
+      var markerString = function(size, label, color, location) {
+        return '&markers=label:'+label+'|color:'+color+'|size:'+size+'|'+location;
+      };
+
+      var getPolyline = function(fromPlace, toPlace) {
+        var out = document.getElementById('out');
+
+        if (!fromPlace || !toPlace) {
+          return;
+        }
+
+        out.innerHTML = 'loading...';
+
+
+        directionsService.route({
+          origin: {'placeId': fromPlace.place_id},
+          destination: {'placeId': toPlace.place_id},
+          travelMode: google.maps.TravelMode.DRIVING
+        }, function(result, status) {
+          if (status !== google.maps.DirectionsStatus.OK) {
+            window.alert('Directions request failed due to ' + status);
+            return;
+          }
+          var p = result.routes[0].overview_polyline;
+          var m1 = markerString(
+              document.getElementById('originSize').value,
+              document.getElementById('originLabel').value,
+              document.getElementById('originColor').value,
+              latLng(fromPlace)
+          );
+          var m2 = markerString(
+              document.getElementById('destSize').value,
+              document.getElementById('destLabel').value,
+              document.getElementById('destColor').value,
+              latLng(toPlace)
+          );
+
+          var img = document.createElement('img');
+          var lineWeight = document.getElementById('lineWeight').value;
+          var lineColor = document.getElementById('lineColor').value;
+          img.src = 'https://maps.googleapis.com/maps/api/staticmap?size=940x160&scale=2&path=weight:'+lineWeight+'|color:'+lineColor+'|enc:'+p+m1+m2;
+          out.innerHTML = '';
+          out.appendChild(img);
+        });
+      };
+
+      var redraw = function(){
+        getPolyline(from.getPlace(), to.getPlace());
+      };
+
+      google.maps.event.addListener(from, 'place_changed', redraw);
+      google.maps.event.addListener(to, 'place_changed', redraw);
+
+      [
+        document.getElementById('originSize'),
+        document.getElementById('originLabel'),
+        document.getElementById('originColor'),
+        document.getElementById('destSize'),
+        document.getElementById('destLabel'),
+        document.getElementById('destColor'),
+        document.getElementById('lineWeight'),
+        document.getElementById('lineColor')
+      ].forEach(function(i) {
+        i.addEventListener('change', redraw);
+      });
+
+    </script>
+  </body>
+</html>
