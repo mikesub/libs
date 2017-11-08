@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/default.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/highlight.min.js"></script>
+  </head>
+  <body style="padding:10px">
+    <button id="button">***</button>
+    <div><pre id="out"></pre></div>
+    <div id="ooo"></div>
+    <script>
+      var output = document.getElementById('out');
+      document.getElementById('button').addEventListener('click', function() {
+        var entries = window.performance.getEntriesByType('paint');
+        output.innerHTML = JSON.stringify(entries, null, 4);
+        hljs.highlightBlock(output);
+        entries.map(function(i) {
+          document.getElementById('ooo').appendChild(
+            document.createTextNode(i.name)
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
